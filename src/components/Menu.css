@@ -1,0 +1,39 @@
+.dishRow {
+  margin-top: 15px;
+}
+
+.card {
+  margin-top: 15px;
+}
+
+.dishesListCard {
+  width: 18rem;
+}
+
+div.poster {
+  margin: 10px;
+}
+
+.smallPoster {
+  user-select: none;
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.star {
+  width: 40px;
+  height: 4em;
+  filter: drop-shadow(2px 4px 6px black);
+  position: absolute;
+  top: 5px;       
+  right: 5px;     
+  font-size: 24px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.posterContainer {
+  position: relative;
+  display: inline-block;
+}
