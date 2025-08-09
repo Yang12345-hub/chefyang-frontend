@@ -4,6 +4,7 @@ import Col from 'react-bootstrap/Col';
 import Row from 'react-bootstrap/Row';
 import Container from 'react-bootstrap/Container';
 import Card from 'react-bootstrap/Card';
+import { Link } from 'react-router-dom';
 
 import "./Menu.css";
 
@@ -135,7 +136,11 @@ const Menu = ({
                       <Card className="dishesListCard">
                         <Card.Img className="smallPoster" src={"/images/" + dish.pic} />
                         <Card.Body>
-                          <Card.Title>{dish.name}</Card.Title>
+                          <Card.Title>
+                            <Link to={`/menu/${dish._id}`} className="dish-link">
+                                {dish.name}
+                            </Link>
+                            </Card.Title>
                           <Card.Text>{dish.description}</Card.Text>
                         </Card.Body>
                       </Card>

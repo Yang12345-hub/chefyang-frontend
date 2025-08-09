@@ -141,3 +141,13 @@ div.poster {
   width: 100%;
   display: block;
 }
+
+.dish-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.dish-link:hover {
+  text-decoration: underline; /* subtle hover */
+  color: #0f62fe; /* or your accent color */
+}
