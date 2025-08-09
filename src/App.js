@@ -13,6 +13,8 @@ import HomePage from "./components/HomePage";
 import Menu from "./components/Menu";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
+import Order from "./components/Order";
+
 
 import './App.css';
 
@@ -74,7 +76,7 @@ function App() {
 
             <Button
               as={Link}
-              to="/menu"
+              to="/order"
               variant="outline-light"
               className="cart-btn me-2 position-relative"
               aria-label={cartCount > 0 ? `Cart with ${cartCount} items` : 'Cart empty'}
@@ -115,6 +117,13 @@ function App() {
             />}
           />
           <Route path="/menu/:id" element={<Dish user={user} />} />
+          <Route exact path="/order" element={
+            <Order
+              user={user}
+              cartItems={cartItems}
+              setCartItems={setCartItems}
+            />}
+          />
         </Routes>
       </div>
     </GoogleOAuthProvider>
