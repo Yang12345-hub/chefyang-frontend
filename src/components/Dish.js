@@ -26,9 +26,9 @@ const Dish = ({ user }) => {
     const fetchDish = async () => {
       setLoading(true);
       try {
-        const res = await MenuDataService.getMenu();
-        const found = (res.data?.dishes || []).find(d => d._id === id);
-        if (mounted) setDish(found || null);
+        const res = await MenuDataService.getDish(id);
+        const found = res.data?.dishesList;
+        if (mounted) setDish(found[0] || null);
       } catch (e) {
         console.error(e);
         if (mounted) setDish(null);
@@ -47,11 +47,11 @@ const Dish = ({ user }) => {
     const desc =
       dish?.description ||
       "This is a delicious dish prepared with fresh ingredients and a balanced flavor profile.";
-    const name = dish?.name || "Chef’s Special";
+    const name = dish?.name || "Chef's Special";
     return [
       { img: pic, title: name, text: desc },
       { img: pic, title: `${name} — Ingredients`, text: desc },
-      { img: pic, title: `${name} — Chef’s Notes`, text: desc },
+      { img: pic, title: `${name} — Chef's Notes`, text: desc },
     ];
   }, [dish]);
 
