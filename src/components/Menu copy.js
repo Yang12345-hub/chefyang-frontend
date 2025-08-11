@@ -18,9 +18,6 @@ const Menu = ({
 
     const [dishes, setDishes] = useState([]);
     const [activeCategory, setActiveCategory] = useState(null);
-    const [qtyById, setQtyById] = useState({}); // { [dishId]: number }
-
-    const getQty = (id) => qtyById[id] ?? 1;
 
     const retrieveDishes = useCallback(() => {
         MenuDataService
@@ -99,17 +96,24 @@ const Menu = ({
     return () => observer.disconnect();
   }, [grouped.keys]);
 
-    const handleAddToCart = (dish) => {
-        const addQty = getQty(dish._id);
+    const handleQtyChange = (dish, value) => {
+        const qty = Number(value);
         setCartItems(prev => {
-            const i = prev.findIndex(it => it.dishId === dish._id);
-            if (i >= 0) {
+        const i = prev.findIndex(it => it.dishId === dish._id);
+        if (i >= 0) {
             const next = [...prev];
-            const currentQty = Number(next[i].qty ?? 0);
-            next[i] = { ...next[i], qty: currentQty + addQty };
+            next[i] = { ...next[i], qty };
             return next;
-            }
-            return [...prev, { dishId: dish._id, qty: addQty }];
+        }
+        return [...prev, { dishId: dish._id, qty }];
+        });
+    };
+
+    const handleAddToCart = (dish) => {
+        setCartItems(prev => {
+        const i = prev.findIndex(it => it.dishId === dish._id);
+        if (i >= 0) return prev;
+        return [...prev, { dishId: dish._id, qty: 1 }];
         });
     };
 
@@ -159,38 +163,35 @@ const Menu = ({
                       <Card className="dishesListCard">
                         <Card.Img className="smallPoster" src={"/images/" + dish.pic} />
                         <Card.Body>
-                          <Card.Title className="d-flex justify-content-between align-items-center">
+                          <Card.Title>
                             <Link to={`/menu/${dish._id}`} className="dish-link">
                                 {dish.name}
                             </Link>
                             <span className="dish-price">
                                 {fmtUSD.format(Number(dish.price || 0))}
-                            </span>
+                              </span>
                             </Card.Title>
                           <Card.Text>{dish.description}</Card.Text>
 
-                          <div className="d-flex gap-2 justify-content-end">
-                            <Form.Select
+                          <div className="d-flex gap-2 align-items-center">
+                              <Form.Select
                                 aria-label="Select quantity"
-                                value={getQty(dish._id)}
-                                onChange={(e) =>
-                                setQtyById(prev => ({ ...prev, [dish._id]: Number(e.target.value) }))
-                                }
+                                value={qty}
+                                onChange={(e) => handleQtyChange(dish, e.target.value)}
                                 style={{ maxWidth: 90 }}
-                            >
+                              >
                                 {[1,2,3,4,5].map(n => (
-                                <option key={n} value={n}>{n}</option>
+                                  <option key={n} value={n}>{n}</option>
                                 ))}
-                            </Form.Select>
-                            <Button
+                              </Form.Select>
+                              <Button
                                 variant="primary"
                                 onClick={() => handleAddToCart(dish)}
-                            >
-                                Add to cart
-                            </Button>
+                                disabled={!!cartEntry} // disable if already in cart
+                              >
+                                {cartEntry ? 'Added' : 'Add to cart'}
+                              </Button>
                             </div>
-                         <div className="d-flex justify-content-end">
-                        </div>
                         </Card.Body>
                       </Card>
                     </Col>

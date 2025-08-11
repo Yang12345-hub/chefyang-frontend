@@ -151,3 +151,41 @@ div.poster {
   text-decoration: underline; /* subtle hover */
   color: #0f62fe; /* or your accent color */
 }
+
+.dish-price {
+  font-weight: 500;
+  color: #444;
+  margin-left: 0.5rem; /* extra breathing room if needed */
+}
+
+.dishesListCard .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Actions row: dropdown + button */
+.dish-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 8px;
+}
+.dish-actions .form-select {
+  max-width: 90px;        /* same as your inline style, moved to CSS */
+}
+.dish-actions .btn[disabled] {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Responsive: let controls wrap on small screens */
+@media (max-width: 576px) {
+  .dish-actions {
+    flex-wrap: wrap;
+  }
+  .dish-actions .form-select,
+  .dish-actions .btn {
+    flex: 1 1 140px;
+  }
+}
