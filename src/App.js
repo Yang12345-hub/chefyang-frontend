@@ -22,6 +22,7 @@ const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 function App() {
   const [user, setUser] = useState(null);
+  const [cartId, setCartId] = useState(null);
   const [cartItems, setCartItems] = useState([]);
 
   useEffect(() => {
@@ -30,7 +31,8 @@ function App() {
     }
     let data = {
       userId: user.googleId,
-      itemIds: cartItems.filter(Boolean),
+      items: cartItems.filter(Boolean),
+      cartId,
     };
     MenuDataService.upsertCart(data);
   }, [cartItems])
@@ -44,7 +46,8 @@ function App() {
         setUser(loginData);
         MenuDataService.getCart(loginData.googleId)
         .then(response => {
-          setCartItems(response.data.itemIds);
+          setCartItems(response.data.items);
+          setCartId(response.data.cartId);
         })
         .catch(e => {
           console.log(e);
@@ -120,7 +123,6 @@ function App() {
           <Route exact path="/order" element={
             <Order
               user={user}
-              cartItems={cartItems}
               setCartItems={setCartItems}
             />}
           />

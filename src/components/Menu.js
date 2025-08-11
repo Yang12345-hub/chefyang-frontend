@@ -12,7 +12,6 @@ import "./Menu.css";
 
 const Menu = ({ 
   user,
-  cartItems,
   setCartItems,
 }) => {
 
@@ -185,8 +184,9 @@ const Menu = ({
                             <Button
                                 variant="primary"
                                 onClick={() => handleAddToCart(dish)}
+                                disabled={!user}
                             >
-                                Add to cart
+                                {user ? "Add to cart" : "Login required"}
                             </Button>
                             </div>
                          <div className="d-flex justify-content-end">
