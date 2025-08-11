@@ -1,3 +1,4 @@
+// src/components/Order.jsx
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Container from "react-bootstrap/Container";
@@ -13,41 +14,35 @@ import Alert from "react-bootstrap/Alert";
 import MenuDataService from "../services/menu";
 import "./Order.css";
 
-/**
- * Props:
- *  - user
- *  - cartItems: can be array of:
- *      [{ _id, name, price, pic, qty? }, ...]  OR  ["id1","id2",...]
- *  - setCartItems(newItems)
- */
-const TAX_RATE = 0.0925; // adjust to your locale / server source
+const TAX_RATE = 0.0925; // adjust as needed
 
 const Order = ({ user, cartItems, setCartItems }) => {
   const navigate = useNavigate();
-  const [items, setItems] = useState([]); // normalized with { _id, name, price, pic, qty }
+  // Enriched items for rendering: { dishId, qty, name, price, pic }
+  const [items, setItems] = useState([]);
 
-  // Normalize cart to full objects (if only IDs were stored, fetch menu + join)
+  // Join [{dishId, qty}] with menu data so we can render name/price/pic
   useEffect(() => {
     let mounted = true;
 
     const normalize = async () => {
-      // already rich objects?
-      if (cartItems?.length && typeof cartItems[0] === "object" && cartItems[0]._id) {
-        // ensure qty exists
-        const enriched = cartItems.map((it) => ({ ...it, qty: it.qty ?? 1 }));
-        if (mounted) setItems(enriched);
-        return;
-      }
-
-      // IDs only → fetch menu, map ids to objects
-      if (cartItems?.length) {
+      if (Array.isArray(cartItems)) {
         try {
           const res = await MenuDataService.getMenu();
           const all = res.data?.dishes || [];
           const enriched = cartItems
-            .map((id) => all.find((d) => d._id === id))
-            .filter(Boolean)
-            .map((d) => ({ _id: d._id, name: d.name, price: d.price ?? 0, pic: d.pic, qty: 1 }));
+            .map(({ dishId, qty }) => {
+              const d = all.find((x) => x._id === dishId);
+              if (!d) return null;
+              return {
+                dishId,
+                qty: Math.max(Number(qty ?? 1), 0),
+                name: d.name,
+                price: Number(d.price ?? 0),
+                pic: d.pic,
+              };
+            })
+            .filter(Boolean);
           if (mounted) setItems(enriched);
         } catch (e) {
           console.error(e);
@@ -59,31 +54,37 @@ const Order = ({ user, cartItems, setCartItems }) => {
     };
 
     normalize();
-    return () => (mounted = false);
+    return () => {
+      mounted = false;
+    };
   }, [cartItems]);
 
-  // Update parent cart when local changes (optional but nice to keep in sync)
-  useEffect(() => {
-    if (!setCartItems) return;
-    // push up as lightweight objects
-    setCartItems(items.map(({ _id, name, price, pic, qty }) => ({ _id, name, price, pic, qty })));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items]);
+  const setBoth = (updaterFn) => {
+    setItems(prevItems => {
+        const next = updaterFn(prevItems);
+        // keep parent in [{dishId, qty}] shape
+        setCartItems(next.map(({ dishId, qty }) => ({ dishId, qty })));
+        return next;
+    });
+  };
 
-  // Qty controls
-  const inc = (id) => {
-    setItems((prev) =>
-      prev.map((it) => (it._id === id ? { ...it, qty: Math.min((it.qty ?? 1) + 1, 99) } : it))
+  const inc = (dishId) => {
+    setBoth(prev =>
+        prev.map(it => it.dishId === dishId ? { ...it, qty: Math.min((it.qty ?? 1)+1, 99) } : it)
     );
   };
-  const dec = (id) => {
-    setItems((prev) =>
-      prev
-        .map((it) => (it._id === id ? { ...it, qty: Math.max((it.qty ?? 1) - 1, 0) } : it))
-        .filter((it) => (it.qty ?? 1) > 0)
+
+  const dec = (dishId) => {
+    setBoth(prev =>
+        prev
+        .map(it => it.dishId === dishId ? { ...it, qty: Math.max((it.qty ?? 1)-1, 0) } : it)
+        .filter(it => (it.qty ?? 1) > 0)
     );
   };
-  const removeItem = (id) => setItems((prev) => prev.filter((it) => it._id !== id));
+
+  const removeItem = (dishId) => {
+    setBoth(prev => prev.filter(it => it.dishId !== dishId));
+  };
 
   // Tip state
   const [tipPct, setTipPct] = useState(0.15); // default 15%
@@ -106,8 +107,7 @@ const Order = ({ user, cartItems, setCartItems }) => {
 
   const handleConfirm = () => {
     if (!items.length) return;
-    // TODO: call backend: create order { userId, items, subtotal, tax, tip, total }
-    // For now just navigate back to menu or show a success message
+    // TODO: call backend: create order { userId, items: [{dishId, qty}], subtotal, tax, tip, total }
     alert("Order placed! (wire this to your backend)");
     navigate("/menu");
   };
@@ -121,7 +121,9 @@ const Order = ({ user, cartItems, setCartItems }) => {
             <Card className="order-left-card">
               <Card.Header className="d-flex justify-content-between align-items-center">
                 <strong>Your Cart</strong>
-                <Link to="/menu" className="small text-decoration-none">Continue shopping</Link>
+                <Link to="/menu" className="small text-decoration-none">
+                  Continue shopping
+                </Link>
               </Card.Header>
 
               <Card.Body className="order-left-scroll">
@@ -132,7 +134,7 @@ const Order = ({ user, cartItems, setCartItems }) => {
                 ) : (
                   <ListGroup variant="flush">
                     {items.map((it) => (
-                      <ListGroup.Item key={it._id} className="py-3">
+                      <ListGroup.Item key={it.dishId} className="py-3">
                         <div className="d-flex gap-3 align-items-center">
                           <Image
                             src={`/images/${it.pic}`}
@@ -144,12 +146,14 @@ const Order = ({ user, cartItems, setCartItems }) => {
                             <div className="d-flex justify-content-between align-items-start">
                               <div>
                                 <div className="fw-semibold">{it.name}</div>
-                                <div className="text-muted small">${Number(it.price).toFixed(2)}</div>
+                                <div className="text-muted small">
+                                  ${Number(it.price).toFixed(2)}
+                                </div>
                               </div>
                               <Button
                                 variant="link"
                                 className="p-0 text-danger small"
-                                onClick={() => removeItem(it._id)}
+                                onClick={() => removeItem(it.dishId)}
                               >
                                 Remove
                               </Button>
@@ -159,7 +163,7 @@ const Order = ({ user, cartItems, setCartItems }) => {
                               <Button
                                 size="sm"
                                 variant="outline-secondary"
-                                onClick={() => dec(it._id)}
+                                onClick={() => dec(it.dishId)}
                               >
                                 −
                               </Button>
@@ -171,7 +175,7 @@ const Order = ({ user, cartItems, setCartItems }) => {
                               <Button
                                 size="sm"
                                 variant="outline-secondary"
-                                onClick={() => inc(it._id)}
+                                onClick={() => inc(it.dishId)}
                               >
                                 +
                               </Button>
@@ -192,7 +196,9 @@ const Order = ({ user, cartItems, setCartItems }) => {
           {/* RIGHT: ~30% (md=4) sticky and shorter */}
           <Col md={4} className="order-right">
             <Card className="order-summary sticky-summary">
-              <Card.Header><strong>Order Summary</strong></Card.Header>
+              <Card.Header>
+                <strong>Order Summary</strong>
+              </Card.Header>
               <Card.Body>
                 <div className="d-flex justify-content-between mb-2">
                   <span>Subtotal</span>
