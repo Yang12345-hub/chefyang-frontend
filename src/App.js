@@ -111,7 +111,6 @@ function App() {
         <Routes>
           <Route exact path="/" element={
             <HomePage
-              user={user}
             />}
           />
           <Route exact path="/menu" element={

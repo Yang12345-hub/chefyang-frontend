@@ -1,0 +1,57 @@
+.HomePage {
+  width: 100vw;
+}
+
+.homepage-title {
+  font-family: "Playfair Display", serif;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.25rem;
+}
+
+.homepage-subtitle {
+  color: #555;
+  margin: 0;
+}
+
+/* Viewport provides the perspective feel + masks horizontal overflow */
+.coverflow-viewport {
+  perspective: 1000px;
+  overflow: hidden;
+  padding: 8px 0;
+}
+
+/* Horizontal scroll lane with snap */
+.coverflow-track {
+  display: flex;
+  gap: 28px;
+  overflow-x: auto;
+  padding: 1rem 2rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.coverflow-track::-webkit-scrollbar {
+  display: none;
+}
+
+.coverflow-card {
+  flex: 0 0 320px;
+  height: 50vh; /* 50% of viewport height */
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.coverflow-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;     /* keeps aspect ratio and fills */
+}
+
+/* Small screens: slightly smaller cards */
+@media (max-width: 576px) {
+  .coverflow-card {
+    flex-basis: 260px;
+    height: 170px;
+  }
+}
