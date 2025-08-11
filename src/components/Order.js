@@ -120,8 +120,8 @@ const Order = ({ user, cartItems, setCartItems }) => {
 
   const handleConfirm = () => {
     if (!items.length) return;
-    // TODO: call backend: create order { userId, items: [{dishId, qty}], subtotal, tax, tip, total }
-    alert("Order placed! (wire this to your backend)");
+    setCartItems([]);
+    alert("Order placed! (Cart is cleared!)");
     navigate("/menu");
   };
 
