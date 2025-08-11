@@ -58,7 +58,9 @@ function App() {
     }
   }, []);
 
-  const cartCount = (cartItems?.filter(Boolean)?.length) || 0;
+  const cartCount = Array.isArray(cartItems)
+    ? cartItems.reduce((sum, item) => sum + (item?.qty ?? 0), 0)
+    : 0;
 
   return (
     <GoogleOAuthProvider clientId={clientId}>
@@ -115,7 +117,6 @@ function App() {
           <Route exact path="/menu" element={
             <Menu
               user={user}
-              cartItems={cartItems}
               setCartItems={setCartItems}
             />}
           />
@@ -123,6 +124,7 @@ function App() {
           <Route exact path="/order" element={
             <Order
               user={user}
+              cartItems={cartItems}
               setCartItems={setCartItems}
             />}
           />

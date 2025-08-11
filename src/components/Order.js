@@ -26,36 +26,49 @@ const Order = ({ user, cartItems, setCartItems }) => {
     let mounted = true;
 
     const normalize = async () => {
-      if (Array.isArray(cartItems)) {
-        try {
-          const res = await MenuDataService.getMenu();
-          const all = res.data?.dishes || [];
-          const enriched = cartItems
+      if (!Array.isArray(cartItems)) {
+      if (mounted) setItems([]);
+             return;
+       }
+
+      try {
+        const res = await MenuDataService.getMenu();
+        const all = res.data?.dishes || [];
+
+        // 🧠 Normalize each line to { dishId, qty }
+        const lines = cartItems
+            .map((it) => {
+            if (typeof it === "string") return { dishId: it, qty: 1 };     // handle old shape
+            if (it && it.dishId) return { dishId: it.dishId, qty: it.qty ?? 1 };
+            return null;
+            })
+            .filter(Boolean);
+
+        // Join with menu
+        const enriched = lines
             .map(({ dishId, qty }) => {
-              const d = all.find((x) => x._id === dishId);
-              if (!d) return null;
-              return {
+            const d = all.find((x) => x._id === dishId);
+            if (!d) return null;
+            return {
                 dishId,
                 qty: Math.max(Number(qty ?? 1), 0),
                 name: d.name,
                 price: Number(d.price ?? 0),
                 pic: d.pic,
-              };
+            };
             })
             .filter(Boolean);
-          if (mounted) setItems(enriched);
+
+        if (mounted) setItems(enriched);
         } catch (e) {
-          console.error(e);
-          if (mounted) setItems([]);
-        }
-      } else {
+        console.error(e);
         if (mounted) setItems([]);
-      }
+        }
     };
 
     normalize();
     return () => {
-      mounted = false;
+        mounted = false;
     };
   }, [cartItems]);
 
