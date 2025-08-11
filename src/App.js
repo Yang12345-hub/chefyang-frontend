@@ -14,6 +14,8 @@ import Menu from "./components/Menu";
 import Login from "./components/Login";
 import Logout from "./components/Logout";
 import Order from "./components/Order";
+import Stores from "./components/Stores";
+
 
 
 import './App.css';
@@ -75,6 +77,7 @@ function App() {
             <Navbar.Collapse id="responsive-navbar-nav">
               <Nav className="ml-auto">
                 <Nav.Link as={Link} to="/">Home</Nav.Link>
+                <Nav.Link as={Link} to="/locations">Locations</Nav.Link>
                 <Nav.Link as={Link} to="/menu">Order Now</Nav.Link>
               </Nav>
             </Navbar.Collapse>
@@ -125,6 +128,10 @@ function App() {
               user={user}
               cartItems={cartItems}
               setCartItems={setCartItems}
+            />}
+          />
+          <Route exact path="/locations" element={
+            <Stores
             />}
           />
         </Routes>
