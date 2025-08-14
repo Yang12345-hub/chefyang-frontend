@@ -47,11 +47,17 @@ const Dish = ({ user }) => {
     const desc =
       dish?.description ||
       "This is a delicious dish prepared with fresh ingredients and a balanced flavor profile.";
+    const ingredients =
+      dish?.ingredients ||
+      "This is a delicious dish prepared with fresh ingredients and a balanced flavor profile.";
+    const notes =
+      dish?.notes ||
+      "This is a delicious dish prepared with fresh ingredients and a balanced flavor profile.";
     const name = dish?.name || "Chef's Special";
     return [
       { img: pic, title: name, text: desc },
-      { img: pic, title: `${name} — Ingredients`, text: desc },
-      { img: pic, title: `${name} — Chef's Notes`, text: desc },
+      { img: pic, title: `${name} — Ingredients`, text: ingredients },
+      { img: pic, title: `${name} — Chef's Notes`, text: notes },
     ];
   }, [dish]);
 
